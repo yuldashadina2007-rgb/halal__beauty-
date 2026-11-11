@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3ec">
+  <title>HALAL BEAUTY — Чаевые мастерам</title>
+  <style>
+    :root {
+      --bg: #f7f3ec;
+      --paper: #fffdf9;
+      --ink: #29251f;
+      --muted: #82796d;
+      --gold: #a98755;
+      --line: #e9e0d3;
+      --green: #168653;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .page { max-width: 900px; margin: 0 auto; padding: 28px 18px 56px; }
+    header { text-align: center; padding: 26px 10px 24px; }
+    .eyebrow { color: var(--gold); font-size: 11px; letter-spacing: .28em; text-transform: uppercase; }
+    h1 { margin: 12px 0 8px; font-family: Georgia, serif; font-weight: 500; font-size: clamp(34px, 8vw, 58px); letter-spacing: .08em; }
+    .intro { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 520px; margin: 0 auto; }
+    .rule { width: 58px; height: 1px; background: var(--gold); margin: 22px auto 0; }
+    .notice { background: #efe7da; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; color: #665a4b; font-size: 13px; line-height: 1.5; margin: 8px 0 22px; text-align: center; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 13px; display: flex; gap: 12px; align-items: center; min-width: 0; box-shadow: 0 5px 18px rgba(66, 48, 25, .035); }
+    .avatar { width: 64px; height: 64px; flex: 0 0 64px; border-radius: 14px; background: linear-gradient(145deg, #e8dece, #f7f1e8); display: grid; place-items: center; color: #8e744f; font-family: Georgia, serif; font-size: 23px; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .info { min-width: 0; flex: 1; }
+    .name { font-family: Georgia, serif; font-size: 18px; margin: 0 0 4px; }
+    .role { color: var(--muted); font-size: 12px; line-height: 1.35; min-height: 30px; }
+    button { border: 0; border-radius: 999px; background: var(--green); color: white; font-weight: 600; font-size: 12px; padding: 10px 13px; margin-top: 9px; cursor: pointer; }
+    button:active { transform: scale(.98); }
+    footer { text-align: center; color: var(--muted); font-size: 11px; margin-top: 28px; line-height: 1.6; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(30,25,18,.42); display: none; align-items: center; justify-content: center; padding: 18px; }
+    .modal { width: min(420px, 100%); background: var(--paper); border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 20px 70px rgba(0,0,0,.18); }
+    .modal h2 { font-family: Georgia, serif; font-weight: 500; margin: 0 0 10px; }
+    .modal p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .modal .primary { display: inline-block; text-decoration: none; background: var(--green); color: white; padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 600; margin-top: 8px; }
+    .close { background: #eee7dc; color: var(--ink); }
+    @media (max-width: 600px) {
+      .page { padding: 12px 13px 38px; }
+      header { padding-top: 24px; }
+      .grid { grid-template-columns: 1fr; gap: 10px; }
+      .card { padding: 11px; }
+      .avatar { width: 58px; height: 58px; flex-basis: 58px; }
+      .name { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Beauty · Care · Gratitude</div>
+      <h1>HALAL BEAUTY</h1>
+      <p class="intro">Выберите мастера, которому хотите оставить чаевые. Спасибо, что цените нашу работу!</p>
+      <div class="rule"></div>
+    </header>
+
+    <div class="notice">Нажмите на своего мастера, чтобы подготовить перевод через Kaspi. Сумму чаевых вы выбираете самостоятельно.</div>
+    <section class="grid" id="masters"></section>
+    <footer>HALAL BEAUTY<br>С благодарностью за ваш визит</footer>
+  </main>
+
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 id="modalTitle">Перевод через Kaspi</h2>
+      <p id="modalText">Номер мастера скопирован. Откройте Kaspi, выберите «Переводы» → «Клиенту Kaspi» → «По номеру телефона», вставьте номер и укажите сумму.</p>
+      <a class="primary" id="kaspiLink" href="https://kaspi.kz/transfers" target="_blank" rel="noopener">Открыть Kaspi</a>
+      <br>
+      <button class="close" id="closeModal" type="button">Закрыть</button>
+    </div>
+  </div>
+
+  <script>
+    // Номера нужны для копирования в Kaspi. Они не отображаются в карточках,
+    // но поскольку это статический сайт, технически их можно увидеть в исходном коде страницы.
+    const masters = [
+      { name: "Асель", role: "Мастер по волосам", phone: "87758855252", photo: "" },
+      { name: "Бакнур", role: "Мастер ламинирования", phone: "87055689584", photo: "" },
+      { name: "Балым", role: "Топ-мастер по волосам", phone: "87029824433", photo: "" },
+      { name: "Гульзара", role: "Мастер по волосам", phone: "87027927979", photo: "" },
+      { name: "Карина", role: "Мастер маникюра", phone: "87774920747", photo: "" },
+      { name: "Лейла", role: "Топ-массажист", phone: "87075885207", photo: "" },
+      { name: "Рабия", role: "Массажист", phone: "87058564252", photo: "" },
+      { name: "Сабина", role: "Мастер маникюра", phone: "87010366607", photo: "" },
+      { name: "Диля", role: "Мастер маникюра и подолог", phone: "87072974205", photo: "" },
+      { name: "Камшат", role: "Косметолог", phone: "87015211122", photo: "" },
+      { name: "Зейнеп", role: "Мастер ламинирования", phone: "87071404939", photo: "" },
+      { name: "Айгуль", role: "Массажист", phone: "87073793163", photo: "" },
+      { name: "Даниса", role: "Мастер по волосам", phone: "87760061552", photo: "" },
+      { name: "Асель", role: "Мастер маникюра", phone: "87075964089", photo: "" },
+      { name: "Асем", role: "Мастер по волосам", phone: "87470695707", photo: "" }
+    ];
+
+    const grid = document.getElementById("masters");
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const kaspiLink = document.getElementById("kaspiLink");
+
+    function initials(name) { return name.trim().slice(0, 1).toUpperCase(); }
+
+    masters.forEach((master, index) => {
+      const card = document.createElement("article");
+      card.className = "card";
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      if (master.photo) {
+        const img = document.createElement("img");
+        img.src = master.photo;
+        img.alt = "Фото мастера " + master.name;
+        avatar.appendChild(img);
+      } else {
+        avatar.textContent = initials(master.name);
+      }
+      const info = document.createElement("div");
+      info.className = "info";
+      const name = document.createElement("h2");
+      name.className = "name";
+      name.textContent = master.name;
+      const role = document.createElement("div");
+      role.className = "role";
+      role.textContent = master.role;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Оставить чаевые";
+      button.addEventListener("click", async () => {
+        modalTitle.textContent = "Чаевые для мастера: " + master.name;
+        try {
+          await navigator.clipboard.writeText(master.phone);
+          document.getElementById("modalText").textContent =
+            "Номер для перевода скопирован. Откройте Kaspi → «Переводы» → «Клиенту Kaspi» → «По номеру телефона», вставьте номер и укажите любую сумму.";
+        } catch (e) {
+          document.getElementById("modalText").textContent =
+            "Откройте Kaspi → «Переводы» → «Клиенту Kaspi» → «По номеру телефона». Для перевода понадобится номер мастера; автоматический переход с заполненным номером Kaspi не подтверждён.";
+        }
+        modal.style.display = "flex";
+      });
+      info.append(name, role, button);
+      card.append(avatar, info);
+      grid.appendChild(card);
+    });
+
+    document.getElementById("closeModal").addEventListener("click", () => modal.style.display = "none");
+    modal.addEventListener("click", (e) => { if (e.target === modal) modal.style.display = "none"; });
+  </script>
+</body>
+</html>
